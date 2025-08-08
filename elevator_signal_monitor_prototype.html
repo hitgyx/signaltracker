@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电梯信号监测App - 原型设计</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #f5f5f5;
+            color: #1c1b1f;
+            line-height: 1.5;
+        }
+
+        /* Material Design 3 Color Tokens */
+        :root {
+            --md-sys-color-primary: #6750a4;
+            --md-sys-color-on-primary: #ffffff;
+            --md-sys-color-primary-container: #eaddff;
+            --md-sys-color-on-primary-container: #21005d;
+            --md-sys-color-secondary: #625b71;
+            --md-sys-color-on-secondary: #ffffff;
+            --md-sys-color-secondary-container: #e8def8;
+            --md-sys-color-on-secondary-container: #1d192b;
+            --md-sys-color-tertiary: #7d5260;
+            --md-sys-color-on-tertiary: #ffffff;
+            --md-sys-color-surface: #fffbfe;
+            --md-sys-color-on-surface: #1c1b1f;
+            --md-sys-color-surface-variant: #e7e0ec;
+            --md-sys-color-on-surface-variant: #49454f;
+            --md-sys-color-outline: #79747e;
+            --md-sys-color-outline-variant: #cab6cf;
+            --md-sys-color-error: #ba1a1a;
+            --md-sys-color-on-error: #ffffff;
+            --md-sys-color-success: #006d3b;
+            --md-sys-color-on-success: #ffffff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .prototype-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: var(--md-sys-color-primary-container);
+            border-radius: 16px;
+        }
+
+        .prototype-header h1 {
+            color: var(--md-sys-color-on-primary-container);
+            font-size: 32px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .prototype-header p {
+            color: var(--md-sys-color-on-primary-container);
+            opacity: 0.8;
+            font-size: 16px;
+        }
+
+        .screens-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .phone-mockup {
+            background: #000;
+            border-radius: 32px;
+            padding: 8px;
+            box-shadow: 0 16px 32px rgba(0,0,0,0.15);
+            max-width: 380px;
+            margin: 0 auto;
+        }
+
+        .phone-screen {
+            background: var(--md-sys-color-surface);
+            border-radius: 24px;
+            overflow: hidden;
+            height: 680px;
+            position: relative;
+        }
+
+        .status-bar {
+            height: 24px;
+            background: var(--md-sys-color-surface);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .app-bar {
+            height: 64px;
+            background: var(--md-sys-color-surface);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        }
+
+        .app-bar h2 {
+            font-size: 22px;
+            font-weight: 400;
+            margin-left: 12px;
+        }
+
+        .screen-content {
+            padding: 24px 16px;
+            height: calc(680px - 88px - 80px);
+            overflow-y: auto;
+        }
+
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: var(--md-sys-color-surface);
+            border-top: 1px solid var(--md-sys-color-outline-variant);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 12px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: var(--md-sys-color-primary);
+        }
+
+        .nav-item .material-icons {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        /* 主界面样式 */
+        .monitoring-card {
+            background: var(--md-sys-color-surface);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+
+        .signal-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .signal-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .signal-strength {
+            width: 32px;
+            height: 20px;
+            background: var(--md-sys-color-success);
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .signal-strength::after {
+            content: '';
+            position: absolute;
+            right: 2px;
+            bottom: 2px;
+            width: 28px;
+            height: 16px;
+            background: repeating-linear-gradient(
+                to right,
+                var(--md-sys-color-surface) 0px,
+                var(--md-sys-color-surface) 2px,
+                transparent 2px,
+                transparent 4px
+            );
+        }
+
+        .network-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .info-item {
+            background: var(--md-sys-color-secondary-container);
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .info-item .label {
+            font-size: 12px;
+            color: var(--md-sys-color-on-secondary-container);
+            opacity: 0.7;
+            margin-bottom: 4px;
+        }
+
+        .info-item .value {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--md-sys-color-on-secondary-container);
+        }
+
+        .elevator-control {
+            text-align: center;
+        }
+
+        .control-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 60px;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 0 auto 16px;
+        }
+
+        .control-button.start {
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+        }
+
+        .control-button.stop {
+            background: var(--md-sys-color-error);
+            color: var(--md-sys-color-on-error);
+        }
+
+        .control-button .material-icons {
+            font-size: 32px;
+        }
+
+        .status-text {
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 14px;
+        }
+
+        /* 历史记录界面样式 */
+        .history-item {
+            background: var(--md-sys-color-surface);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .history-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .history-date {
+            font-weight: 500;
+            color: var(--md-sys-color-primary);
+        }
+
+        .history-duration {
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 14px;
+        }
+
+        .history-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--md-sys-color-on-surface-variant);
+        }
+
+        /* 详情界面样式 */
+        .detail-card {
+            background: var(--md-sys-color-surface);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--md-sys-color-outline-variant);
+        }
+
+        .chart-container {
+            height: 200px;
+            background: var(--md-sys-color-surface-variant);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-placeholder {
+            color: var(--md-sys-color-on-surface-variant);
+            text-align: center;
+        }
+
+        /* 模拟图表 */
+        .signal-chart {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, 
+                var(--md-sys-color-primary) 0%, 
+                var(--md-sys-color-secondary) 50%, 
+                var(--md-sys-color-tertiary) 100%);
+            opacity: 0.2;
+        }
+
+        .chart-line {
+            position: absolute;
+            width: 80%;
+            height: 2px;
+            background: var(--md-sys-color-primary);
+            top: 50%;
+            left: 10%;
+            transform: translateY(-50%);
+        }
+
+        .chart-line::before,
+        .chart-line::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: var(--md-sys-color-primary);
+            border-radius: 50%;
+            top: -2px;
+        }
+
+        .chart-line::before {
+            left: 0;
+        }
+
+        .chart-line::after {
+            right: 0;
+        }
+
+        /* 设置界面样式 */
+        .setting-section {
+            margin-bottom: 24px;
+        }
+
+        .setting-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--md-sys-color-primary);
+            margin-bottom: 12px;
+        }
+
+        .setting-item {
+            background: var(--md-sys-color-surface);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .switch {
+            width: 48px;
+            height: 24px;
+            background: var(--md-sys-color-outline);
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .switch.active {
+            background: var(--md-sys-color-primary);
+        }
+
+        .switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+        }
+
+        .switch.active::after {
+            transform: translateX(24px);
+        }
+
+        .fab {
+            position: absolute;
+            bottom: 96px;
+            right: 16px;
+            width: 56px;
+            height: 56px;
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            border: none;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transition: all 0.2s ease;
+        }
+
+        .fab:hover {
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .screen-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--md-sys-color-primary);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .screens-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="prototype-header">
+            <h1>电梯信号监测App</h1>
+            <p>基于Material Design 3的完整原型设计</p>
+        </div>
+
+        <div class="screens-grid">
+            <!-- 主界面 - 实时监测 -->
+            <div class="phone-mockup">
+                <div class="phone-screen">
+                    <div class="status-bar">
+                        <span>9:41</span>
+                        <span>📶 🔋 100%</span>
+                    </div>
+                    <div class="app-bar">
+                        <span class="material-icons">signal_cellular_alt</span>
+                        <h2>信号监测</h2>
+                    </div>
+                    <div class="screen-content">
+                        <div class="monitoring-card">
+                            <div class="signal-status">
+                                <div class="signal-indicator">
+                                    <div class="signal-strength"></div>
+                                    <span>-65 dBm</span>
+                                </div>
+                                <span style="color: var(--md-sys-color-success); font-weight: 500;">信号良好</span>
+                            </div>
+                            
+                            <div class="network-info">
+                                <div class="info-item">
+                                    <div class="label">网络制式</div>
+                                    <div class="value">5G NR</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="label">小区ID</div>
+                                    <div class="value">12345678</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="label">频段</div>
+                                    <div class="value">n78 (3.5GHz)</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="label">运营商</div>
+                                    <div class="value">中国移动</div>
+                                </div>
+                            </div>
+                            
+                            <div class="elevator-control">
+                                <button class="control-button start">
+                                    <span class="material-icons">play_arrow</span>
+                                    开始监测
+                                </button>
+                                <div class="status-text">点击开始记录电梯信号变化</div>
+                            </div>
+                        </div>
+                        
+                        <div class="monitoring-card">
+                            <h3 style="margin-bottom: 16px; color: var(--md-sys-color-on-surface);">实时信号趋势</h3>
+                            <div class="chart-container">
+                                <div class="signal-chart"></div>
+                                <div class="chart-line"></div>
+                                <div class="chart-placeholder">
+                                    <span class="material-icons" style="font-size: 32px; margin-bottom: 8px;">show_chart</span>
+                                    <div>实时信号强度变化图表</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bottom-nav">
+                        <div class="nav-item active">
+                            <span class="material-icons">home</span>
+                            <span>主页</span>
+                        </div>
+                        <div class="nav-item">
+                            <span class="material-icons">history</span>
+                            <span>历史</span>
+                        </div>
+                        <div class="nav-item">
+                            <span class="material-icons">analytics</span>
+                            <span>统计</span>
+                        </div>
+                        <div class="nav-item">
+                            <span class="material-icons">settings</span>
+                            <span>设置</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 监测中界面 -->
+            <div class="phone-mockup">
+                <div class="phone-screen">
+                    <div class="status-bar">
+                        <span>9:42</span>
+                        <span>📶 🔋 99%</span>
+                    </div>
+                    <div class="app-bar">
+                        <span class="material-icons">signal_cellular_alt</span>
+                        <h2>正在监测</h2>
+                    </div>
+                    <div class="screen-content">
+                        <div class="monitoring-card">
+                            <div class="signal-status">
+                                <div class="signal-indicator">
+                                    <div class="signal-strength" style="background: var(--md-sys-color-error);"></div>
+                                    <span>-95 dBm</span>
+                                </div>
+                                <span style="color: var(--md-sys-color-error); font-weight: 500;">信号较弱</span>
+                            </div>
+                            
+                            <div class="network-info">
+                                <div class="info-item">
+                                    <div class="label">网络制式</div>
+                                    <div class="value">4G LTE</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="label">小区ID</div>
+                                    <div class="value">87654321</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="label">监测时长</div>
+                                    <div class="value">00:02:15</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="label">当前楼层</div>
+                                    <div class="value">15F → 3F</div>
+                                </div>
+                            </div>
+                            
+                            <div class="elevator-control">
+                                <button class="control-button stop">
+                                    <span class="material-icons">stop</span>
+                                    结束监测
+                                </button>
+                                <div class="status-text">正在记录电梯信号变化</div>
+                            </div>
+                        </div>
+                        
+                        <div class="monitoring-card">
+                            <h3 style="margin-bottom: 16px; color: var(--md-sys-color-on-surface);">信号变化记录</h3>
+                            <div style="background: var(--md-sys-color-secondary-container); padding: 12px; border-radius: 8px; margin-bottom: 8px;">
+                                <div style="font-size: 12px; color: var(--md-sys-color-on-secondary-container); opacity: 0.7;">09:40:15</div>
+                                <div style="font-size: 14px; color: var(--md-sys-color-on-secondary-container);">信号强度: -65dBm → -85dBm</div>
+                            </div>
+                            <div style="background: var(--md-sys-color-secondary-container); padding: 12px; border-radius: 8px; margin-bottom: 8px;">
+                                <div style="font-size: 12px; color: var(--md-sys-color-on-secondary-container); opacity: 0.7;">09:40:45</div>
+                                <div style="font-size: 14px; color: var(--md-sys-color-on-secondary-container);">小区切换: 12345678 → 87654321</div>
+                            </div>
+                            <div style="background: var(--md-sys-color-secondary-container); padding: 12px; border-radius: 8px;">
+                                <div style="font-size: 12px; color: var(--md-sys-color-on-secondary-container); opacity: 0.7;">09:41:20</div>
+                                <div style="font-size: 14px; color: var(--md-sys-color-on-secondary-container);">网络制式: 5G → 4G</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bottom-nav">
+                        <div class="nav-item active">
+                            <span class="material-icons">home</span>
+                            <span>主页</span>
+                        </div>
+                        <div class="nav-item">
+                            <span class="material-icons">history</span>
+                            <span>历史</span>
+                        </div>
+                        <div class="nav-item">
+                            <span class="material-icons">analytics</span>
+                            <span>统计</span>
+                        </div>
+                        <div class="nav-item">
+                            <span class="material-icons">settings</span>
+                            <span>设置</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 历史记录界面 -->
+            <div class="phone-mockup">
+                <div class="phone-screen">
+                    <div class="status-bar">
+                        <span>9:43</span>
+                        <span>📶 🔋 98%</span>
+                    </div>
+                    <div class="app-bar">
+                        <span class="material-icons">history</span>
+                        <h2>历史记录</h2>
+                    </div>
+                    <div class="screen-content">
+                        <div class="history-item">
+                            <div class="history-header">
+                                <div class="history-date">今天 09:25</div>
+                                <div class="history-duration">2分30秒</div>
+                            </div>
+                            <div class="history-details">
+                                <span>25F → 1F</span>
+                                <span>5G → 4G → 3G</span>
+                                <span>3次小区切换</span>
+                            </div>
+                        </div>
+                        
+                        <div class="history-item">
+                            <div class="history-header">
+                                <div class="history-date">今天 08:45</div>
+                                <div class="history-duration">1分45秒</div>
+                            </div>
+                            <div class="history-details">
+                                <span>1F → 18F</span>
+                                <span>4G稳定</span>
+                                <span>1次小区切换</span>
+                            </div>
+                        </div>
+                        
+                        <div class="history-item">
+                            <div class="history-header">
+                                <div class="history-date">昨天 18:30</div>
+                                <div class="history-duration">3分15秒</div>
+                            </div>
+                            <div class="history-details">
+                                <span>12F → B2F</span>
+                                <span>5G → 无信号</span>
+                                <span>信号中断15秒</span>
+                            </div>
+                        </div>
+                        
+                        <div class="history-item">
+                            <div class="history-header">
+                                <div class="history-date">昨天 12:20</div>
+                                <div class="history-duration">2分05秒</div>
+                            </div>
+                            <div class="history-details">
+                                <span>6F → 22F</span>
+                                <span>5G稳定</span>
+                                <span>无切换</span>
+                            </div>
+                        </div>
+                        
+                        <div class="history-item">
+                            <div class="history-header">
+                                <div class="history-date">2天前 15:15</div>
+                                <div class="history-duration">4分20秒</div>
+                            </div>
+                            <div class="history-details">
+                                <span>1F → 35F</span>
+                                <span>4G → 5G</span>
+                                <span>2次小区切换</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bottom-nav">
+                        <div class="nav-item">
+                            <span class="material-icons">home</span>
+                            <span>主页</span>
+                        </div>
+                        <div class="nav-item active">
+                            <span class="material-icons">history</span>
+                            <span>历史</span>
+                        </div>
+                        <div class="nav-item">
+                            <span class="material-icons">analytics</span>
+                            <span>统计</span>
+                        </div>
+                        <div class="nav-item">
+                            <span class="material-icons">settings</span>
+                            <span>设置</span>
+                        </div>
+                    </div>
+                    <button class="fab">
+                        <span class="material-icons">filter_list</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 详情界面 -->
+            <div class="phone-mockup">
+                <div class="phone-screen">
+                    <div class="status-bar">
+                        <span>9:44</span>
+                        <span>📶 🔋 97%</span>
+                    </div>
+                    <div class="app-bar">
+                        <span class="material-icons">arrow_back</span>
+                        <h2>详细信息</h2>
+                    </div>
+                    <div class="screen-content">
+                        <div class="detail-card">
+                            <div class="detail-header">
+                                <div>
+                                    <div style="font-size: 18px; font-weight: 500; margin-bottom: 4px;">今天 09:25</div>
+                                    <div style="color: var(--md-sys-color-on-surface-variant); font-size: 14px;">持续时间: 2分30秒</div>
+                                </div>
+                                <span class="material-icons" style="color: var(--md-sys-color-primary);">share</span>
+                            </div>
+                            
+                            <div class="network-info">
+                                <div class="info-item">
+                                    <div class="label">起始楼层</div>
+                                    <div class="value">25F</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="label">结束楼层</div>
+                                    <div class="value">1F</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="label">平均信号</div>
+                                    <div class="value">-78 dBm</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="label">小区切换</div>
+                                    <div class="value">3次</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-card">
+                            <h3 style="margin-bottom: 16px; color: var(--md-sys-color-on-surface);">信号强度变化</h3>
+                            <div class="chart-container" style="height: 160px;">
+                                <div class="chart-placeholder">
+                                    <span class="material-icons" style="font-size: 32px; margin-bottom: 8px;">trending_down</span>
+                                    <div>信号强度随时间变化曲线图</div>
+                                    <div style="font-size: 12px; margin-top: 4px;">-65dBm → -95dBm → -82dBm</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-card">
+                            <h3 style="margin-bottom: 16px; color: var(--md-sys-color-on-surface);">网络切换记录</h3>
+                            <div style="space-y: 8px;">
+                                <div style="padding: 12px; background: var(--md-sys-color-surface-variant); border-radius: 8px; margin-bottom: 8px;">
+                                    <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant); margin-bottom: 4px;">09:25:15 - 25F</div>
+                                    <div>5G NR → 4G LTE (小区: 12345678 → 87654321)</div>
+                                </div>
+                                <div style="padding: 12px; background: var(--md-sys-color-surface-variant); border-radius: 8px; margin-bottom: 8px;">
+                                    <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant); margin-bottom: 4px;">09:26:30 - 18F</div>
+                                    <div>4G LTE → 3G WCDMA (小区: 87654321 → 45678912)</div>
+                                </div>
+                                <div style="padding: 12px; background: var(--md-sys-color-surface-variant); border-radius: 8px;">
+                                    <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant); margin-bottom: 4px;">09:27:20 - 5F</div>
+                                    <div>3G WCDMA → 4G LTE (小区: 45678912 → 78912345)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bottom-nav">
+                        <div class="nav-item">
+                            <span class="material-icons">home</span>
+                            <span>主页</span>
+                        </div>
+                        <div class="nav-item active">
+                            <span class="material-icons">history</span>
+                            <span>历史</span>
+                        </div>
+                        <div class="nav-item">
+                            <span class="material-icons">analytics</span>
+                            <span>统计</span>
+                        </div>
+                        <div class="nav-item">
+                            <span class="material-icons">settings</span>
+                            <span>设置</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 统计界面 -->
+            <div class="phone-mockup">
+                <div class="phone-screen">
+                    <div class="status-bar">
+                        <span>9:45</span>
+                        <span>📶 🔋 96%</span>
+                    </div>
+                    <div class="app-bar">
+                        <span class="material-icons">analytics</span>
+                        <h2>数据统计</h2>
+                    </div>
+                    <div class="screen-content">
+                        <div class="detail-card">
+                            <h3 style="margin-bottom: 16px; color: var(--md-sys-color-on-surface);">本周统计</h3>
+                            <div class="network-info">
+                                <div class="info-item">
+                                    <div class="label">总次数</div>
+                                    <div class="value">23次</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="label">总时长</div>
+                                    <div class="value">58分钟</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="label">平均信号</div>
+                                    <div class="value">-72 dBm</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="label">信号中断</div>
+                                    <div class="value">3次</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-card">
+                            <h3 style="margin-bottom: 16px; color: var(--md-sys-color-on-surface);">网络制式分布</h3>
+                            <div class="chart-container" style="height: 140px;">
+                                <div class="chart-placeholder">
+                                    <span class="material-icons" style="font-size: 32px; margin-bottom: 8px;">pie_chart</span>
+                                    <div>网络制式使用比例</div>
+                                    <div style="font-size: 12px; margin-top: 4px;">5G: 45% | 4G: 40% | 3G: 15%</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-card">
+                            <h3 style="margin-bottom: 16px; color: var(--md-sys-color-on-surface);">每日使用趋势</h3>
+                            <div class="chart-container" style="height: 140px;">
+                                <div class="chart-placeholder">
+                                    <span class="material-icons" style="font-size: 32px; margin-bottom: 8px;">bar_chart</span>
+                                    <div>每日电梯使用次数统计</div>
+                                    <div style="font-size: 12px; margin-top: 4px;">工作日平均4次 | 周末平均2次</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-card">
+                            <h3 style="margin-bottom: 16px; color: var(--md-sys-color-on-surface);">楼层热力分布</h3>
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                                <div style="background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); padding: 8px; border-radius: 8px; text-align: center; font-size: 12px;">1F<br/>18次</div>
+                                <div style="background: var(--md-sys-color-secondary); color: var(--md-sys-color-on-secondary); padding: 8px; border-radius: 8px; text-align: center; font-size: 12px;">15F<br/>12次</div>
+                                <div style="background: var(--md-sys-color-tertiary); color: var(--md-sys-color-on-tertiary); padding: 8px; border-radius: 8px; text-align: center; font-size: 12px;">25F<br/>8次</div>
+                                <div style="background: var(--md-sys-color-outline); color: var(--md-sys-color-surface); padding: 8px; border-radius: 8px; text-align: center; font-size: 12px;">B2F<br/>5次</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bottom-nav">
+                        <div class="nav-item">
+                            <span class="material-icons">home</span>
+                            <span>主页</span>
+                        </div>
+                        <div class="nav-item">
+                            <span class="material-icons">history</span>
+                            <span>历史</span>
+                        </div>
+                        <div class="nav-item active">
+                            <span class="material-icons">analytics</span>
+                            <span>统计</span>
+                        </div>
+                        <div class="nav-item">
+                            <span class="material-icons">settings</span>
+                            <span>设置</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 设置界面 -->
+            <div class="phone-mockup">
+                <div class="phone-screen">
+                    <div class="status-bar">
+                        <span>9:46</span>
+                        <span>📶 🔋 95%</span>
+                    </div>
+                    <div class="app-bar">
+                        <span class="material-icons">settings</span>
+                        <h2>设置</h2>
+                    </div>
+                    <div class="screen-content">
+                        <div class="setting-section">
+                            <div class="setting-title">监测设置</div>
+                            <div class="setting-item">
+                                <div>
+                                    <div style="font-weight: 500;">自动检测电梯</div>
+                                    <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant);">基于重力感应器自动识别</div>
+                                </div>
+                                <div class="switch"></div>
+                            </div>
+                            <div class="setting-item">
+                                <div>
+                                    <div style="font-weight: 500;">振动反馈</div>
+                                    <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant);">信号变化时震动提醒</div>
+                                </div>
+                                <div class="switch active"></div>
+                            </div>
+                            <div class="setting-item">
+                                <div>
+                                    <div style="font-weight: 500;">后台监测</div>
+                                    <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant);">应用在后台时继续监测</div>
+                                </div>
+                                <div class="switch active"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-section">
+                            <div class="setting-title">数据管理</div>
+                            <div class="setting-item">
+                                <div>
+                                    <div style="font-weight: 500;">自动清理数据</div>
+                                    <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant);">30天后自动删除记录</div>
+                                </div>
+                                <div class="switch active"></div>
+                            </div>
+                            <div class="setting-item">
+                                <div>
+                                    <div style="font-weight: 500;">数据导出</div>
+                                    <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant);">导出为CSV格式</div>
+                                </div>
+                                <span class="material-icons" style="color: var(--md-sys-color-outline);">chevron_right</span>
+                            </div>
+                            <div class="setting-item">
+                                <div>
+                                    <div style="font-weight: 500;">云端同步</div>
+                                    <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant);">同步到Google Drive</div>
+                                </div>
+                                <div class="switch"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-section">
+                            <div class="setting-title">通知设置</div>
+                            <div class="setting-item">
+                                <div>
+                                    <div style="font-weight: 500;">每日总结</div>
+                                    <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant);">每天晚上推送使用总结</div>
+                                </div>
+                                <div class="switch active"></div>
+                            </div>
+                            <div class="setting-item">
+                                <div>
+                                    <div style="font-weight: 500;">异常提醒</div>
+                                    <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant);">信号异常时推送通知</div>
+                                </div>
+                                <div class="switch active"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-section">
+                            <div class="setting-title">关于</div>
+                            <div class="setting-item">
+                                <div>
+                                    <div style="font-weight: 500;">版本信息</div>
+                                    <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant);">v1.0.0 (20241201)</div>
+                                </div>
+                                <span class="material-icons" style="color: var(--md-sys-color-outline);">chevron_right</span>
+                            </div>
+                            <div class="setting-item">
+                                <div>
+                                    <div style="font-weight: 500;">隐私政策</div>
+                                    <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant);">查看数据使用说明</div>
+                                </div>
+                                <span class="material-icons" style="color: var(--md-sys-color-outline);">chevron_right</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bottom-nav">
+                        <div class="nav-item">
+                            <span class="material-icons">home</span>
+                            <span>主页</span>
+                        </div>
+                        <div class="nav-item">
+                            <span class="material-icons">history</span>
+                            <span>历史</span>
+                        </div>
+                        <div class="nav-item">
+                            <span class="material-icons">analytics</span>
+                            <span>统计</span>
+                        </div>
+                        <div class="nav-item active">
+                            <span class="material-icons">settings</span>
+                            <span>设置</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 设计说明 -->
+        <div style="background: var(--md-sys-color-surface); padding: 32px; border-radius: 16px; margin-top: 40px;">
+            <h2 style="color: var(--md-sys-color-primary); margin-bottom: 24px;">设计要点说明</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                <div>
+                    <h3 style="color: var(--md-sys-color-secondary); margin-bottom: 12px;">🎨 Material Design 3</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 8px;">• 采用最新的MD3设计语言</li>
+                        <li style="margin-bottom: 8px;">• 动态颜色系统和主题色调</li>
+                        <li style="margin-bottom: 8px;">• 圆角设计和柔和阴影</li>
+                        <li style="margin-bottom: 8px;">• 符合无障碍设计标准</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 style="color: var(--md-sys-color-secondary); margin-bottom: 12px;">📱 用户体验</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 8px;">• 简洁直观的操作流程</li>
+                        <li style="margin-bottom: 8px;">• 清晰的信息层次结构</li>
+                        <li style="margin-bottom: 8px;">• 一键开始/结束监测</li>
+                        <li style="margin-bottom: 8px;">• 丰富的视觉反馈</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 style="color: var(--md-sys-color-secondary); margin-bottom: 12px;">📊 数据可视化</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 8px;">• 实时信号强度图表</li>
+                        <li style="margin-bottom: 8px;">• 历史趋势分析</li>
+                        <li style="margin-bottom: 8px;">• 网络制式分布统计</li>
+                        <li style="margin-bottom: 8px;">• 楼层使用热力图</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 style="color: var(--md-sys-color-secondary); margin-bottom: 12px;">⚙️ 功能特性</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 8px;">• 手动/自动监测模式</li>
+                        <li style="margin-bottom: 8px;">• 完整的历史记录管理</li>
+                        <li style="margin-bottom: 8px;">• 灵活的数据导出功能</li>
+                        <li style="margin-bottom: 8px;">• 个性化设置选项</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div style="margin-top: 32px; padding: 20px; background: var(--md-sys-color-primary-container); border-radius: 12px;">
+                <h3 style="color: var(--md-sys-color-on-primary-container); margin-bottom: 12px;">💡 技术实现建议</h3>
+                <p style="color: var(--md-sys-color-on-primary-container); line-height: 1.6;">
+                    建议使用 <strong>Flutter</strong> 或 <strong>React Native</strong> 进行跨平台开发，配合 <strong>SQLite</strong> 本地数据库存储。
+                    网络信号监测可以使用 Android 的 <code>TelephonyManager</code> API 获取小区信息和信号强度。
+                    图表展示推荐使用 <strong>Chart.js</strong> 或类似的轻量级图表库。
+                    Material Design 3 组件可以通过官方的 <strong>Material 3 Design Kit</strong> 实现。
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 简单的交互效果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 开关按钮交互
+            const switches = document.querySelectorAll('.switch');
+            switches.forEach(switchEl => {
+                switchEl.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                });
+            });
+            
+            // 控制按钮交互
+            const controlButtons = document.querySelectorAll('.control-button');
+            controlButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (this.classList.contains('start')) {
+                        this.classList.remove('start');
+                        this.classList.add('stop');
+                        this.innerHTML = '<span class="material-icons">stop</span>结束监测';
+                    } else {
+                        this.classList.remove('stop');
+                        this.classList.add('start');
+                        this.innerHTML = '<span class="material-icons">play_arrow</span>开始监测';
+                    }
+                });
+            });
+            
+            // 历史记录点击效果
+            const historyItems = document.querySelectorAll('.history-item');
+            historyItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    this.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 150);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
